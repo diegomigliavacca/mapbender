@@ -41,17 +41,12 @@ class ApplicationType extends AbstractType {
             // Security
             ->add('published', 'checkbox', array(
                 'required' => false,
-                'label' => 'Published'))
-            ->add('owner', 'entity', array(
-                'class' => 'MapbenderCoreBundle:User',
-                'property' => 'username',
-                'label' => 'Owner'))
-            ->add('roles', 'entity', array(
-                'class' => 'MapbenderCoreBundle:Role',
-                'expanded' => true,
-                'multiple' => true,
-                'property' => 'title',
-                'label' => 'Roles'));
+                'label' => 'Published'));
+
+            $builder->add('acl', 'acl', array(
+                'property_path' => false,
+                'data' => $options['data'],
+                'label' => 'Access Control List'));
     }
 }
 

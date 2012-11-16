@@ -13,7 +13,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Response;
-
+use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Mapbender\CoreBundle\Entity\Application;
 use Mapbender\ManagerBundle\Form\Type\ApplicationType;
 
@@ -77,8 +77,17 @@ class ApplicationController extends Controller {
         $form->bindRequest($request);
         if($form->isValid()) {
             $em = $this->getDoctrine()->getEntityManager();
+
+            $em->getConnection()->beginTransaction();
+
             $em->persist($application);
             $em->flush();
+
+            $aclManager = $this->get('fom.acl.manager');
+            $aclManager->setObjectACLFromForm($application, $form->get('acl'),
+                'object');
+
+            $em->getConnection()->commit();
 
             $this->get('session')->setFlash('notice',
                 'Your application has been saved.');
@@ -101,6 +110,7 @@ class ApplicationController extends Controller {
      */
     public function editAction($slug) {
         $application = $this->get('mapbender')->getApplicationEntity($slug);
+
         $form = $this->createApplicationForm($application);
 
         $templateClass = $application->getTemplate();
@@ -126,11 +136,34 @@ class ApplicationController extends Controller {
 
         $form->bindRequest($request);
         if($form->isValid()) {
-            $em = $this->getDoctrine()->getEntityManager();
-            $em->flush();
 
-            $this->get('session')->setFlash('notice',
-                'Your application has been updated.');
+            $em = $this->getDoctrine()->getEntityManager();
+            $em->getConnection()->beginTransaction();
+
+            try {
+
+                $em->flush();
+
+                $aclManager = $this->get('fom.acl.manager');
+                $aclManager->setObjectACLFromForm($application,
+                    $form->get('acl'), 'object');
+
+                $em->getConnection()->commit();
+
+                $this->get('session')->setFlash('notice',
+                    'Your application has been updated.');
+            
+            } catch(\Exception $e) {
+            
+                $this->get('session')->setFlash('error',
+                    'There was an error trying to save your application.');
+                $em->getConnection()->rollback();
+                $em->close();
+            
+                //if($this->container->getParameter('kernel.debug'))  {
+                    throw($e);
+                //}   
+            }
 
             return $this->redirect(
                 $this->generateUrl('mapbender_manager_application_edit', array(
@@ -210,8 +243,17 @@ class ApplicationController extends Controller {
         $form->bindRequest($request);
         if($form->isValid()) {
             $em = $this->getDoctrine()->getEntityManager();
+            $aclProvider = $this->get('security.acl.provider');
+
+            $em->getConnection()->beginTransaction();
+            
+            $oid = ObjectIdentity::fromDomainObject($application);
+            $aclProvider->deleteAcl($oid);
+
             $em->remove($application);
             $em->flush();
+            
+            $em->commit();
 
             $this->get('session')->setFlash('notice',
                 'Your application has been deleted.');
