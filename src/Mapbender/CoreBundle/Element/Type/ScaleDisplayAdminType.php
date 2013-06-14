@@ -4,21 +4,20 @@ namespace Mapbender\CoreBundle\Element\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Mapbender\CoreBundle\Form\Type\PositionType;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * 
  */
-class CopyrightAdminType extends AbstractType
+class ScaleDisplayAdminType extends AbstractType
 {
-
     /**
      * @inheritdoc
      */
     public function getName()
     {
-        return 'copyright';
+        return 'scaledisplay';
     }
 
     /**
@@ -27,8 +26,7 @@ class CopyrightAdminType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-            'application' => null,
-//            'target' => null
+            'application' => null
         ));
     }
 
@@ -38,7 +36,13 @@ class CopyrightAdminType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('tooltip', 'text', array('required' => false))
-                ->add('width', 'text', array('required' => true))->add('anchor', "choice",
+                ->add('target', 'target_element',
+                      array(
+                    'element_class' => 'Mapbender\\CoreBundle\\Element\\Map',
+                    'application' => $options['application'],
+                    'property_path' => '[target]',
+                    'required' => false))
+                ->add('anchor', "choice",
                       array(
                     'required' => true,
                     "choices" => array(
@@ -50,15 +54,7 @@ class CopyrightAdminType extends AbstractType
                 ->add('position', new PositionType(),
                       array(
                     'label' => 'Position',
-                    'property_path' => '[position]'))
-                ->add('copyrigh_text', 'text', array('required' => false))
-                ->add('copyright_link', 'text', array('required' => false))
-                ->add('link_type', 'choice', array(
-                    'choices' => array("" => ' ',"dialog" => 'dialog', 'url' => 'url'),
-                    'required' => false))
-                ->add('link_url', 'text', array('required' => false))
-                ->add('dialog_content', 'textarea', array('required' => false))
-                ->add('dialog_title', 'text', array('required' => false));
+                    'property_path' => '[position]'));
     }
 
 }

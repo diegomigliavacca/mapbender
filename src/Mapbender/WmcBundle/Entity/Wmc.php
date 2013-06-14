@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * A Wmc entity presents an OGC WMC.
  * @ORM\Entity
- * @ORM\Table(name="mb_wmc")
+ * @ORM\Table(name="mb_wmc_wmc")
  * ORM\DiscriminatorMap({"mb_wmc" = "Wmc"})
  */
 class Wmc
@@ -23,6 +23,18 @@ class Wmc
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     protected $id;
+    
+    /**
+     * @var string $version The wmc version
+     * @ORM\Column(type="string", length=10, nullable=true)
+     */
+    protected $version = "1.1.0";
+    
+    /**
+     * @var string $wmcid a wmc id
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    protected $wmcid;
 
     /**
      * @ORM\OneToOne(targetEntity="Mapbender\CoreBundle\Entity\State", cascade={"persist","remove"})
@@ -55,17 +67,22 @@ class Wmc
     public $descriptionurl;
     
     /**
-     * @var string $screenshot_path The wmc description
+     * @var string $screenshotPath The wmc description
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $screenshot_path;
+    private $screenshotPath;
 
     /**
      * @Assert\File(maxSize="6000000")
      */
     private $screenshot;
+    
+    /**
+     * @var Contact A contact.
+     * @ORM\OneToOne(targetEntity="Mapbender\CoreBundle\Entity\Contact", cascade={"persist","remove"})
+     */
+    protected $contact;
 
-    /* @TODO ContactImformation */
 
     /**
      * Get id
@@ -166,25 +183,25 @@ class Wmc
     }
     
     /**
-     * Set screenshot_path
+     * Set screenshotPath
      *
-     * @param string $screenshot_path
+     * @param string $screenshotPath
      * @return Source
      */
-    public function setScreenshot_path($screenshot_path)
+    public function setScreenshotPath($screenshotPath)
     {
-        $this->screenshot_path = $screenshot_path;
+        $this->screenshotPath = $screenshotPath;
         return $this;
     }
 
     /**
-     * Get screenshot_path
+     * Get screenshotPath
      *
      * @return string 
      */
-    public function getScreenshot_path()
+    public function getScreenshotPath()
     {
-        return $this->screenshot_path;
+        return $this->screenshotPath;
     }
 
     
@@ -194,6 +211,40 @@ class Wmc
      */
     public function setScreenshot($screenshot) {
         $this->screenshot = $screenshot;
+    }
+
+    /**
+     * Get version
+     *
+     * @return string
+     */
+    public function getVersion() {
+        return $this->version;
+    }
+    
+    /**
+     * @param string $version
+     */
+    public function setVersion($version) {
+        $this->version = $version;
+        return $this;
+    }
+
+    /**
+     * Get version
+     *
+     * @return string
+     */
+    public function getWmcid() {
+        return $this->wmcid;
+    }
+    
+    /**
+     * @param string $wmcid
+     */
+    public function setWmcid($wmcid) {
+        $this->wmcid = $wmcid;
+        return $this;
     }
 
     /**
@@ -210,12 +261,18 @@ class Wmc
             $descriptionUrl = null)
     {
         $state = $state === null ? new State() : $state;
-        $logoUrl = $logoUrl === null ? LegendUrl::create() : logoUrl;
-        $descriptionUrl = $descriptionUrl === null ? OnlineResource::create() : $descriptionUrl;
         $wmc = new Wmc();
         $wmc->setState($state);
-        $wmc->setLogourl($logoUrl);
-        $wmc->setDescriptionurl($descriptionUrl);
+        $logoUrl = $logoUrl === null ? LegendUrl::create() : logoUrl;
+        if($logoUrl !== null)
+        {
+            $wmc->setLogourl($logoUrl);
+        }
+        $descriptionUrl = $descriptionUrl === null ? OnlineResource::create() : $descriptionUrl;
+        if($descriptionUrl !== null)
+        {
+            $wmc->setDescriptionurl($descriptionUrl);
+        }
         return $wmc;
     }
 

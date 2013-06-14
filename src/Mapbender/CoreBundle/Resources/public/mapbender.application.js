@@ -200,7 +200,9 @@ Mapbender.DefaultModel = {
         
         $(this.mbMap.element).mapQuery(mapOptions);
         this.map = $(this.mbMap.element).data('mapQuery');
-        
+        this.map.layersList.mapquery0.olLayer.isBaseLayer = true;
+        this.map.olMap.setBaseLayer(this.map.layersList.mapquery0);
+        this._addLayerMaxExtent(this.map.layersList.mapquery0);
         $.each(layers, function(idx, layer) {
             self._addSourceAtStart(layer);
         });
@@ -283,14 +285,14 @@ Mapbender.DefaultModel = {
                 width: size.w,
                 height: size.h
                 },
-            bbox: {
+            extent: {
                 srs: proj.projCode,
                 minx: ext.left,
                 miny: ext.bottom,
                 maxx: ext.right,
                 maxy: ext.top
             },
-            maxBbox: {
+            maxextent: {
                 srs: proj.projCode,
                 minx: maxExt.left,
                 miny: maxExt.bottom,
@@ -302,6 +304,7 @@ Mapbender.DefaultModel = {
         var sources = this.getSources();
         for(var i = 0; i < sources.length; i++){
             var source = $.extend(true, {}, sources[i]);
+            source.layers = [];
             var root = source.configuration.children[0].children[0];
             var list = Mapbender.source[source.type].getLayersList(source, root, true);
             $.each(list.layers, function(idx, layer){
@@ -1274,11 +1277,7 @@ Mapbender.DefaultModel = {
 
             layer.initResolutions();
         });
-        //        this.map.olMap.setCenter(center, this.map.olMap.getZoom(), false, true);
-        this.center({
-            position: [center.lon, center.lat], 
-            zoom: this.map.olMap.getZoom()
-        });
+        this.map.olMap.setCenter(center, this.map.olMap.getZoom(), false, true);
         this.mbMap._trigger('srsChanged', null, {
             projection: srs.projection
         });

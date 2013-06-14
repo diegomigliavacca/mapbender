@@ -26,6 +26,19 @@ class LegendUrl
      */
     //@TODO Doctrine bug: "protected" replaced with "public"
     public $height;
+    
+    /**
+     * 
+     * @param OnlineResource $onlineResource onl
+     * @param int $width
+     * @param int $height
+     */
+    public function __construct($onlineResource = null, $width = null, $height = null)
+    {
+        $this->onlineResource = $onlineResource;
+        $this->width = $width;
+        $this->height = $height;
+    }
 
     /**
      * Set onlineResource
@@ -95,14 +108,21 @@ class LegendUrl
     {
         return $this->height;
     }
-    
-    public static function create($width = null, $height = null, $onlineResource = null)
+
+    public static function create($width = null, $height = null,
+            $onlineResource = null)
     {
         $onlineResource = $onlineResource === null ? OnlineResource::create() : $onlineResource;
-        $lurl = new LegendUrl();
-        $lurl->setWidth($width);
-        $lurl->setWidth($width);
-        $lurl->setOnlineResource($onlineResource);
+        if($onlineResource === null)
+        {
+            $lurl = null;
+        } else
+        {
+            $lurl = new LegendUrl();
+            $lurl->setWidth($width);
+            $lurl->setHeight($height);
+            $lurl->setOnlineResource($onlineResource);
+        }
         return $lurl;
     }
 

@@ -9,16 +9,6 @@ $.extend(true, Mapbender, {
                 layerDef.origId =  layerDef.id;
                 var rootLayer = layerDef.configuration.children[0];
                 this._readLayerDef(layersDefs, layers, queryLayers, rootLayer, true);
-                //            $.each(layerDef.configuration.layers, function(idx, layer) {
-                //                var layerDef = $.extend({},
-                //                    { visible: true, queryable: false }, layer );
-                //                if(layerDef.visible && typeof layerDef.name === 'string' && layerDef.name.length > 0) {
-                //                    layers.push(layerDef.name);
-                //                }
-                //                if(layerDef.queryable) {
-                //                    queryLayers.push(layerDef.name);
-                //                }
-                //            });
                 layersDefs.reverse();
                 var finalUrl = layerDef.configuration.options.url;
 
@@ -32,9 +22,6 @@ $.extend(true, Mapbender, {
                     url:         finalUrl,
                     noMagic: true,
 
-//                    layers:      layers.reverse(),//layersDefs,
-//                    queryLayers: queryLayers,
-
                     transparent: layerDef.configuration.options.transparent,
                     format:      layerDef.configuration.options.format,
 
@@ -46,7 +33,8 @@ $.extend(true, Mapbender, {
                     attribution: layerDef.configuration.options.attribution, // attribution add !!!
 
                     minScale:    rootLayer.minScale,
-                    maxScale:    rootLayer.maxScale
+                    maxScale:    rootLayer.maxScale,
+                    transitionEffect: 'resize'
                 };
                 return mqLayerDef;
             },
@@ -167,7 +155,7 @@ $.extend(true, Mapbender, {
                 .appendTo($('body'));
             },
 
-            layersFromCapabilities: function(xml, id, splitLayers, defFormat, defInfoformat) {
+            layersFromCapabilities: function(xml, id, splitLayers, model, defFormat, defInfoformat) {
                 if(!defFormat){
                     defFormat = "image/png";
                 }
@@ -179,9 +167,19 @@ $.extend(true, Mapbender, {
 
                 if(typeof(capabilities.capability) !== 'undefined') {
                     var rootlayer = capabilities.capability.nestedLayers[0];
-                    var bboxOb = {};
+                    var bboxOb = {}, bboxSrs = null, bboxBounds = null;
                     for(bbox in rootlayer.bbox){
-                        bboxOb[bbox] = rootlayer.bbox[bbox].bbox;
+                        if(model.getProj(bbox) !== null){
+                            bboxOb[bbox] = rootlayer.bbox[bbox].bbox;
+                            bboxSrs = bbox;
+                            bboxBounds = OpenLayers.Bounds.fromArray(bboxOb[bbox]);
+                        }
+                    }
+                    for(srs in rootlayer.srs){
+                        if(rootlayer.srs[srs] === true && typeof bboxOb[srs] === 'undefined' && model.getProj(srs) !== null && bboxBounds !== null){
+                            var oldProj = model.getProj(bboxSrs);
+                            bboxOb[srs] = bboxBounds.transform(oldProj, model.getProj(srs)).toArray();
+                        }
                     }
                     var format;
                     var formats = capabilities.capability.request.getmap.formats;
@@ -206,11 +204,11 @@ $.extend(true, Mapbender, {
                         origId: id,
                         title: capabilities.service.title,
                         configuration: {
-                            baseSource: false,
+                            isBaseSource: false,
                             options: {
                                 baselayer: false,
-                                bbox: bboxOb,
-                                srslist: null,
+//                                bbox: bboxOb,
+                                srslist: bboxOb,
                                 format: format,
                                 info_format: infoformat,
                                 opacity: 1,
@@ -278,9 +276,11 @@ $.extend(true, Mapbender, {
                         if(num !== 0){
                             var service_new = $.extend(true, {}, service);
                             service_new.id = service_new.id + "_" + num;
-                            service_new.origid = service_new.id + "_" + num;
+                            service_new.origId = service_new.id;
                             var root_new = $.extend(true, {}, rootLayer);
+                            root_new.options.id = service_new.id + "_0";
                             var layer_new = $.extend(true, {}, layer);
+                            layer_new.options.id = service_new.id + "_1";
                             if(layer_new.children)
                                 delete(layer_new.children);
                             root_new.children = [layer_new];
@@ -299,6 +299,7 @@ $.extend(true, Mapbender, {
                         var service = $.extend(true, {}, def);
                         var result = [];
                         var defs = getSplitted(def, layers, layers, result, 0);
+                        return result;
                     } else {
                         def.configuration.children = [layers];
                         return [def];

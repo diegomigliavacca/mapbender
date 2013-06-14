@@ -1,16 +1,15 @@
 <?php
 
-namespace Mapbender\WmsBundle\Element;
+namespace Mapbender\CoreBundle\Element;
 
 use Mapbender\CoreBundle\Component\Element;
 
 /**
- * WmsLoader
- * 
- * @author Karim Malhas
+ * Map's overview element
+ *
  * @author Paul Schmidt
  */
-class WmsLoader extends Element
+class ScaleDisplay extends Element
 {
 
     /**
@@ -18,7 +17,7 @@ class WmsLoader extends Element
      */
     static public function getClassTitle()
     {
-        return "WmsLoader";
+        return "ScaleDisplay";
     }
 
     /**
@@ -26,7 +25,7 @@ class WmsLoader extends Element
      */
     static public function getClassDescription()
     {
-        return "WMS Loader";
+        return "ScaleDisplay";
     }
 
     /**
@@ -34,7 +33,7 @@ class WmsLoader extends Element
      */
     static public function getClassTags()
     {
-        return array("wms", "loader");
+        return array('ScaleDisplay', "Map's scale dispaly");
     }
 
     /**
@@ -43,14 +42,11 @@ class WmsLoader extends Element
     public static function getDefaultConfiguration()
     {
         return array(
-            "tooltip" => "",
-            "target" => null,
-            "autoOpen" => false,
-            "defaultFormat" => "image/png",
-            "defaultInfoFormat" => "text/html",
-            "splitLayers" => false
-//            "toc" => ""
-        );
+            'title' => 'Scale Display',
+            'tooltip' => 'Scale Display',
+            'target' => null,
+            'anchor' => 'right-bottom',
+            'position' => array('20px', '20px'));
     }
 
     /**
@@ -58,7 +54,15 @@ class WmsLoader extends Element
      */
     public function getWidgetName()
     {
-        return 'mapbender.mbWmsloader';
+        return 'mapbender.mbScaledisplay';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getType()
+    {
+        return 'Mapbender\CoreBundle\Element\Type\ScaleDisplayAdminType';
     }
 
     /**
@@ -67,20 +71,8 @@ class WmsLoader extends Element
     public function getAssets()
     {
         return array(
-            'js' => array(
-                'mapbender.element.wmsloader.js'
-            ),
-            'css' => array(
-            )
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getType()
-    {
-        return 'Mapbender\WmsBundle\Element\Type\WmsLoaderAdminType';
+            'js' => array('mapbender.element.scaledisplay.js'),
+            'css' => array('mapbender.element.scaledisplay.css'));
     }
 
     /**
@@ -89,7 +81,7 @@ class WmsLoader extends Element
     public function render()
     {
         return $this->container->get('templating')
-                        ->render('MapbenderWmsBundle:Element:wmsloader.html.twig',
+                        ->render('MapbenderCoreBundle:Element:scaledisplay.html.twig',
                                  array(
                             'id' => $this->getId(),
                             "title" => $this->getTitle(),

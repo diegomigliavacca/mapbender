@@ -20,6 +20,17 @@ class OnlineResource
      */
     //@TODO Doctrine bug: "protected" replaced with "public"
     public $href;
+    
+    /**
+     * 
+     * @param string $format
+     * @param string $href
+     */
+    public function __cunstruct($format = null, $href = null)
+    {
+        $this->format = $format;
+        $this->href = $href;
+    }
 
     /**
      * Set format
@@ -66,12 +77,18 @@ class OnlineResource
     {
         return $this->href;
     }
-    
+
     public static function create($format = null, $href = null)
     {
-        $olr = new OnlineResource();
-        $olr->setFormat($format);
-        $olr->setHref($href);
+        if($href === null)
+        {
+            $olr = null;
+        } else
+        {
+            $olr = new OnlineResource();
+            $olr->setFormat($format);
+            $olr->setHref($href);
+        }
         return $olr;
     }
 
