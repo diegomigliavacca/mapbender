@@ -74,7 +74,7 @@ class PrintClient extends Element
                     "format" => "a3"),
                 "a3landscape" => array(
                     "label" => "A3 Landscape",
-                    "format" => "a3")),
+                    "format" => "a3")),             
             "scales" => array(500, 1000, 5000, 10000, 25000),
             "quality_levels" => array("72" => "Entwurf", "288" => "Document"),
             "rotatable" => true,
