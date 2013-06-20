@@ -437,4 +437,5 @@ class PrintService
                     $this->conf['northarrow']['height']*10);
         unlink($tempdir.'/rotatednorth.png');
     }
+
 }
