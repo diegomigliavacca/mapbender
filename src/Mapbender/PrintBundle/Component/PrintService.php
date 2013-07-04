@@ -343,7 +343,7 @@ class PrintService
                 default:
                     if (isset($this->data['extra'][$k]))
                     {
-                        $pdf->Cell($this->conf['fields'][$k]['width']*10,$this->conf['fields'][$k]['height']*10,$this->data['extra'][$k]);
+                        $pdf->Cell($this->conf['fields'][$k]['width']*10,$this->conf['fields'][$k]['height']*10,utf8_decode($this->data['extra'][$k]));
                     }
                     break;
             }
