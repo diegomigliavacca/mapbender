@@ -169,12 +169,16 @@ class WmsInstance extends SourceInstance
                 ->setOpacity($this->opacity / 100)
                 ->setTiled($this->tiled);
         $wmsconf->setOptions($options);
+        
         if(!key_exists("children", $this->configuration))
         {
             $num = 0;
             $rootlayer = new WmsInstanceLayer();
             $rootlayer->setTitle($this->title)
                     ->setId($this->getId()."_".$num)
+                    ->setMinScale(!isset($this->configuration["minScale"]) ? null : $this->configuration["minScale"])
+                    ->setMaxScale(!isset($this->configuration["maxScale"]) ? null : $this->configuration["maxScale"])
+                    ->setSelected(!isset($this->configuration["visible"]) ? false : $this->configuration["visible"])
                     ->setPriority($num)
                     ->setWmslayersource(new WmsLayerSource())
                     ->setWmsInstance($this);
@@ -203,12 +207,15 @@ class WmsInstance extends SourceInstance
                     $layersource->addStyle($style);
                 }
                 $layer->setTitle($layerDef["title"])
-                        ->setId($this->getId()."_".$num)
+                        ->setId($this->getId() . '-' . $num)
+                        ->setMinScale(!isset($layerDef["minScale"]) ? null : $layerDef["minScale"])
+                        ->setMaxScale(!isset($layerDef["maxScale"]) ? null : $layerDef["maxScale"])
                         ->setSelected(!isset($layerDef["visible"]) ? false : $layerDef["visible"])
                         ->setInfo(!isset($layerDef["queryable"]) ? false : $layerDef["queryable"])
                         ->setParent($rootlayer)
                         ->setWmslayersource($layersource)
                         ->setWmsInstance($this);
+                $layer->setAllowinfo($layer->getInfo() !== null && $layer->getInfo() ? true : false);
                 $rootlayer->addSublayer($layer);
                 $this->addLayer($layer);
             }
