@@ -111,7 +111,7 @@
          * (see model.createChangedObj(id)).
          */
         fireModelEvent: function(options){
-            window.console && console.log("fireEvent:", options);
+//            window.console && console.log("fireEvent:", options);
             this._trigger(options.name, null, options.value);
         },
         /**
@@ -123,7 +123,7 @@
         /**
          * Reterns the generated source id from model
          */
-        genereateSourceId: function() {
+        generateSourceId: function() {
             return this.model.generateSourceId();
         },
         /**

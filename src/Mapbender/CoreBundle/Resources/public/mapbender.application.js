@@ -144,35 +144,6 @@ Mapbender.DefaultModel = {
                 }
             }
         }
-        
-        var layers = [];
-        var allOverlays = true;
-        var hasLayers = false;
-        
-        //        function addSubs(layer){
-        //            if(layer.sublayers) {
-        //                $.each(layer.sublayers, function(idx, val) {
-        //                    layers.push(val);
-        //                    addSubs(val);
-        //                });
-        //            }
-        //        }
-        $.each(Mapbender.configuration.layersets[this.mbMap.options.layerset].reverse(), function(idx, defArr) {
-            $.each(defArr, function(idx, layerDef) {
-                self.sourceTree.push(layerDef);
-                //                self.sources.push(layerDef);
-                hasLayers = true;
-                layerDef.id = idx;
-                layers.push(self._convertLayerDef.call(self, layerDef));
-                //                addSubs(layers[layers.length-1]);
-                allOverlays = allOverlays && (layerDef.configuration.baselayer !== true);
-            });
-        });
-        
-        //        if(!hasLayers){
-        //            Mapbender.error('The element "map" has no layer.');
-        //        }
-
         var mapOptions = {
             maxExtent: this._transformExtent(this.mapMaxExtent, this.proj).toArray(),
             zoomToMaxExtent: false,
@@ -181,7 +152,7 @@ Mapbender.DefaultModel = {
             projection: this.proj,
             displayProjection: this.proj,
             units: this.proj.proj.units,
-            allOverlays: allOverlays,
+            allOverlays: true,
             theme: null,
             layers: [{
                 type: "wms", 
@@ -203,10 +174,12 @@ Mapbender.DefaultModel = {
         this.map.layersList.mapquery0.olLayer.isBaseLayer = true;
         this.map.olMap.setBaseLayer(this.map.layersList.mapquery0);
         this._addLayerMaxExtent(this.map.layersList.mapquery0);
-        $.each(layers, function(idx, layer) {
-            self._addSourceAtStart(layer);
+        $.each(Mapbender.configuration.layersets[this.mbMap.options.layerset].reverse(), function(idx, defArr) {
+            $.each(defArr, function(idx, layerDef) {
+                layerDef.id = self.generateSourceId();
+                self.addSource(layerDef, null, null);
+            });
         });
-
         if(poi){
             this.center({
                 position: poi.position
@@ -466,62 +439,7 @@ Mapbender.DefaultModel = {
     center: function(options) {
         this.map.center(options);
     },
-    
-    /**
-     *
-     */
-    _addSourceAtStart: function(mqSource){
-        var self = this;
-        var source = this.getSource({
-            id: mqSource.mapbenderId
-        });
-        var changed = this.createChangedObj(source);
-        var result = {
-            layers: [],
-            infolayers: [],
-            changed: changed
-        };
-        result = Mapbender.source[source.type].checkLayers(source,
-            this.map.olMap.getScale(), this.createToChangeObj(source),result);
-        mqSource.layers = result.layers;
-        if(mqSource.layers.length === 0){
-            mqSource.visibility = false;
-        }
-        var toadd = this.createChangedObj(source);
-        this.mbMap.fireModelEvent({
-            name: 'beforesourceadded', 
-            value: {
-                source: toadd
-            }
-        });
-        var addedMq = this.map.layers(mqSource);
-        if(addedMq){
-            source.mqlid = addedMq.id;
-            source.ollid = addedMq.olLayer.id;
-            addedMq.source = this.getSource({
-                id: source.id
-            });
-            this._addLayerMaxExtent(addedMq);
-            addedMq.olLayer.events.register("loadstart", addedMq.olLayer, function (e) {
-                self._sourceLoadStart(e);
-            });
-            addedMq.olLayer.events.register("tileloaded", addedMq.olLayer, function (e) {
-                var imgEl = $('div[id="'+e.element.id+'"]  .olImageLoadError');
-                if(imgEl.length > 0){
-                    self._sourceLoadError(e, imgEl);
-                } else {
-                    self._sourceLoadeEnd(e);
-                }
-            });        
-            this.mbMap.fireModelEvent({
-                name: 'sourceAdded', 
-                value: {
-                    mapquerylayer: toadd
-                }
-            });
-        }
-    },
-    
+            
     /**
      *
      */
@@ -634,6 +552,7 @@ Mapbender.DefaultModel = {
      *
      */
     addSource: function(sourceDef, before, after){
+        var self = this;
         if(!this.getSourcePos(sourceDef)){
             if(!before && !after){
                 before = {
@@ -671,6 +590,17 @@ Mapbender.DefaultModel = {
                 id: sourceDef.id
             });
             this._addLayerMaxExtent(mapQueryLayer);
+            mapQueryLayer.olLayer.events.register("loadstart", mapQueryLayer.olLayer, function (e) {
+                self._sourceLoadStart(e);
+            });
+            mapQueryLayer.olLayer.events.register("tileloaded", mapQueryLayer.olLayer, function (e) {
+                var imgEl = $('div[id="'+e.element.id+'"]  .olImageLoadError');
+                if(imgEl.length > 0){
+                    self._sourceLoadError(e, imgEl);
+                } else {
+                    self._sourceLoadeEnd(e);
+                }
+            });
             var added = this.createChangedObj(sourceDef);
             added.before = before;
             added.after = after;

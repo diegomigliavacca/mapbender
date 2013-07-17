@@ -101,7 +101,7 @@
         _getCapabilitiesUrlSuccess: function(xml, getCapabilitiesUrl) {
             var self = this;
             var mbMap = $('#' + self.options.target).data('mbMap');
-            var id = mbMap.genereateSourceId();
+            var id = mbMap.generateSourceId();
             var layerDefs = Mapbender.source.wms.layersFromCapabilities(xml, id, this.options.splitLayers, mbMap.model, this.options.defaultFormat, this.options.defaultInfoFormat);
             $.each(layerDefs, function(idx, layerDef){
                 mbMap.addSource(layerDef, null, null);
